@@ -95,8 +95,9 @@ h2.display{font-size:clamp(36px,5.2vw,64px)}
 .menu-body>*{min-width:0}
 
 /* the rail: pinned category strip on a phone, a side list on a desk */
-.rail{position:sticky;top:var(--rail-top);z-index:30;background:rgba(14,12,10,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin-inline:calc(-1*var(--gutter));padding-inline:var(--gutter);transition:top .3s}
-.rail ul{display:flex;gap:8px;padding:10px 0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.rail{position:sticky;top:var(--rail-top);z-index:30;background:rgba(14,12,10,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin-inline:calc(-1*var(--gutter));transition:top .3s}
+.rail ul{display:flex;gap:8px;padding:10px var(--gutter);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:var(--gutter)}
+.rail-search{margin-inline:var(--gutter)}
 .rail ul::-webkit-scrollbar{display:none}
 .rail button{white-space:nowrap;min-height:42px;padding:8px 14px;border-radius:999px;border:1px solid var(--line-2);color:var(--marble-2);font-size:13.5px;display:inline-flex;gap:8px;align-items:center;transition:background .2s,color .2s,border-color .2s}
 .rail button svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -116,7 +117,7 @@ h2.display{font-size:clamp(36px,5.2vw,64px)}
 @media(min-width:1024px){
   .menu-body{grid-template-columns:240px minmax(0,1fr);gap:48px;align-items:start}
   .rail{top:calc(var(--top) + 16px);background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border:0;margin:0;padding:0;transition:none}
-  .rail-search{display:flex;margin-bottom:10px}
+  .rail-search{display:flex;margin:0 0 10px}
   .rail-search .cancel{display:none}
   .rail ul{flex-direction:column;gap:2px;padding:0;overflow:visible}
   .rail li:first-child{display:none}
