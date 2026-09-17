@@ -23,6 +23,7 @@ let lastY = scrollY;
 function away(v) { top.classList.toggle('away', v); document.documentElement.style.setProperty('--rail-top', v ? '0px' : getComputedStyle(top).height); }
 function chrome() {
   const y = scrollY;
+  if (pop.classList.contains('open')) { lastY = y; return; }
   top.classList.toggle('solid', y > 24);
   if (phone()) { if (y > 160 && y > lastY + 3) away(true); else if (y < lastY - 3 || y <= 160) away(false); }
   else away(false);
@@ -113,7 +114,7 @@ function spy() {
   if (hit) setCurrent(hit.dataset.cat);
 }
 let ticking = false;
-addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; chrome(); spy(); }); } }, { passive: true });
+addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; chrome(); spy(); pill(); }); } }, { passive: true });
 addEventListener('scrollend', () => { jumpingUntil = 0; spy(); });
 function jump(id) {
   const s = $('#cat-' + id); if (!s) return;
@@ -163,14 +164,14 @@ function openFrom(el, k) {
   const first = el.getBoundingClientRect(), last = targetRect();
   Object.assign(pop.style, { left: `${last.left}px`, top: `${last.top}px`, width: `${last.width}px`, height: `${last.height}px` });
   pop.hidden = false; backdrop.hidden = false; pop.classList.add('open');
-  document.body.classList.add('locked'); tray.classList.add('hide'); hidePlate(el);
+  document.documentElement.classList.add('locked'); hidePlate(el);
   popCard.getAnimations().forEach(a => a.cancel());
   if (motionOK) {
     busy = true;
     const dx = first.left - last.left, dy = first.top - last.top;
     pop.animate([{ transform: `translate(${dx}px,${dy}px) scale(${first.width / last.width},${first.height / last.height})` }, { transform: 'none' }], FLY);
     popCard.animate([{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(180deg)' }], FLIP);
-    backdrop.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, fill: 'forwards' });
+    backdrop.animate([{ opacity: 0, backdropFilter: 'blur(0px)', webkitBackdropFilter: 'blur(0px)' }, { opacity: 1, backdropFilter: 'blur(10px)', webkitBackdropFilter: 'blur(10px)' }], { duration: 480, fill: 'forwards' });
     setTimeout(() => { busy = false; }, FLY.duration);
   } else popCard.style.transform = 'rotateY(180deg)';
   pop.focus({ preventScroll: true });
@@ -192,9 +193,9 @@ function close() {
   const finish = () => {
     if (done) return; done = true; busy = false;
     pop.classList.remove('open'); pop.hidden = true; backdrop.hidden = true;
-    document.body.classList.remove('locked'); tray.classList.remove('hide');
+    document.documentElement.classList.remove('locked');
     popCard.getAnimations().forEach(a => a.cancel()); popCard.style.transform = '';
-    hidePlate(null); spy();
+    hidePlate(null); spy(); pill();
     if (el) el.focus({ preventScroll: true });
   };
   if (!motionOK) return finish();
@@ -203,7 +204,7 @@ function close() {
   const to = dest ? `translate(${dest.left - last.left}px,${dest.top - last.top}px) scale(${dest.width / last.width},${dest.height / last.height})` : 'scale(.92)';
   const a = pop.animate([{ transform: 'none', opacity: 1 }, { transform: to, opacity: dest ? 1 : 0 }], { duration: 520, easing: 'cubic-bezier(.3,.7,.2,1)' });
   popCard.animate([{ transform: 'rotateY(180deg)' }, { transform: 'rotateY(0deg)' }], { duration: 520, easing: 'cubic-bezier(.3,.7,.2,1)', fill: 'forwards' });
-  backdrop.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, fill: 'forwards' });
+  backdrop.animate([{ opacity: 1, backdropFilter: 'blur(10px)', webkitBackdropFilter: 'blur(10px)' }, { opacity: 0, backdropFilter: 'blur(0px)', webkitBackdropFilter: 'blur(0px)' }], { duration: 520, easing: 'ease-in', fill: 'forwards' });
   a.onfinish = finish; setTimeout(finish, 620);
 }
 function step(d) {
@@ -245,17 +246,14 @@ document.addEventListener('click', e => {
 });
 $$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
 
-/* the menu pill hides once you're in the menu */
-new IntersectionObserver(es => { if (!pop.classList.contains('open')) tray.classList.toggle('hide', es[0].isIntersecting); }, { rootMargin: '-120px 0px 0px 0px' }).observe($('#menu'));
+/* the menu pill hides while any of the menu is on screen — decided every scroll frame, so it can never be left behind */
+const menuSec = $('#menu');
+function pill() { const r = menuSec.getBoundingClientRect(); tray.classList.toggle('hide', r.top < innerHeight - 140 && r.bottom > 160); }
 
-/* films */
-const films = $$('video'), toggle = $('.film-toggle');
-let paused = !motionOK;
-function playback() { films.forEach(v => paused ? v.pause() : v.play().catch(() => {})); toggle.textContent = paused ? 'تشغيل الحركة' : 'إيقاف الحركة'; toggle.setAttribute('aria-pressed', String(paused)); }
-toggle.addEventListener('click', () => { paused = !paused; playback(); });
-if (paused) playback();
+/* films: honour Reduce Motion */
+if (!motionOK) $$('video').forEach(v => v.pause());
 
 $('#year').textContent = new Date().getFullYear();
-chrome(); spy();
+chrome(); spy(); pill();
 if (location.hash === '#menu') requestAnimationFrame(() => $('#menu').scrollIntoView({ behavior: 'instant' }));
 })();
