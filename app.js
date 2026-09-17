@@ -261,7 +261,13 @@ $$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d)
 
 /* the menu pill hides while any of the menu is on screen — decided every scroll frame, so it can never be left behind */
 const menuSec = $('#menu');
-function pill() { const r = menuSec.getBoundingClientRect(); tray.classList.toggle('hide', r.top < innerHeight - 140 && r.bottom > 160); }
+const trayArrow = $('span', tray);
+function pill() {
+  const r = menuSec.getBoundingClientRect();
+  tray.classList.toggle('hide', r.top < innerHeight - 140 && r.bottom > 160);
+  const dir = r.bottom <= 160 ? '↑' : '↓';   /* past the menu, it points back up to it */
+  if (trayArrow.textContent !== dir) trayArrow.textContent = dir;
+}
 
 /* films: honour Reduce Motion */
 if (!motionOK) $$('video').forEach(v => v.pause());
