@@ -1,4 +1,4 @@
-// DOOZ — a static menu. Rows of plates you swipe through, a dish page you can flip like a book. No cart, no storage.
+// DOOZ — a static menu. Rows of plates you swipe through; a plate you tap lifts off the row, turns over and settles mid-screen. No cart, no storage.
 (() => {
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -10,6 +10,11 @@ const byId = new Map(items.map(x => [x.id, x]));
 const money = n => n.toFixed(2);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const img = x => x.image_url || `assets/menu/${x.id}.webp`;
+/* scroll a horizontal strip so `el` sits in its middle — the strip only, never the page */
+function centerIn(strip, el, smooth) {
+  const s = strip.getBoundingClientRect(), r = el.getBoundingClientRect();
+  strip.scrollBy({ left: (r.left + r.width / 2) - (s.left + s.width / 2), behavior: smooth && motionOK ? 'smooth' : 'auto' });
+}
 
 /* the header: solid once the hero scrolls; on a phone it slides away while you browse the menu.
    the hero film drifts at a quarter of the page's speed. */
@@ -69,9 +74,10 @@ const plate = x => `<button type="button" class="plate" data-open="${x.id}" aria
   <span class="cap"><span class="name">${esc(x.name)}</span><span class="en" dir="ltr">${esc(x.en)}</span><span class="price">${money(x.price)}<small>JD</small></span></span>
 </button>`;
 $('#chapters').innerHTML = data.map((c, ci) => `<section class="chapter" id="cat-${c.id}" data-cat="${c.id}" aria-labelledby="h-${c.id}">
-  <div class="chapter-head">${icon(c.id)}<h3 id="h-${c.id}">${esc(c.name)}</h3><span class="meta">${esc(c.en)}</span><span class="count" data-count>1 / ${c.items.length}</span><span class="arrows"><button type="button" data-arrow="-1" aria-label="السابق">→</button><button type="button" data-arrow="1" aria-label="التالي">←</button></span></div>
+  <div class="chapter-head">${icon(c.id)}<div class="titles"><h3 id="h-${c.id}">${esc(c.name)}</h3><span class="meta">${esc(c.en)}</span></div><span class="count" data-count>1 / ${c.items.length}</span><span class="arrows"><button type="button" data-arrow="-1" aria-label="السابق">→</button><button type="button" data-arrow="1" aria-label="التالي">←</button></span></div>
   ${ci === 0 ? '<p class="swipe-hint" id="swipe-hint"><b aria-hidden="true">←</b> اسحب لتشوف باقي الأطباق</p>' : ''}
   <div class="plates" data-plates>${c.items.map(plate).join('')}</div>
+  <div class="dots" data-dots aria-hidden="true">${c.items.map(() => '<i></i>').join('')}</div>
 </section>`).join('');
 
 /* plates fade in as their photo arrives; the one in the middle of the row is lit */
@@ -79,15 +85,15 @@ document.addEventListener('load', e => { if (e.target.tagName === 'IMG') e.targe
 $$('img').forEach(im => { if (im.complete && im.naturalWidth) im.classList.add('in'); });
 const hint = $('#swipe-hint');
 $$('[data-plates]').forEach(row => {
-  const plates = $$('.plate', row), count = $('[data-count]', row.parentElement);
+  const plates = $$('.plate', row), count = $('[data-count]', row.parentElement), dots = $$('[data-dots] i', row.parentElement);
   const lit = new IntersectionObserver(es => es.forEach(e => {
     e.target.classList.toggle('lit', e.isIntersecting);
-    if (e.isIntersecting) count.textContent = `${plates.indexOf(e.target) + 1} / ${plates.length}`;
-  }), { root: row, threshold: 0.7 });
+    if (e.isIntersecting) { const k = plates.indexOf(e.target); count.textContent = `${k + 1} / ${plates.length}`; dots.forEach((d, i) => d.classList.toggle('on', i === k)); }
+  }), { root: row, threshold: 0.6 });
   plates.forEach(p => lit.observe(p));
   row.addEventListener('scroll', () => hint && hint.classList.add('gone'), { passive: true, once: true });
 });
-function slide(row, dir) { const step = ($('.plate', row).offsetWidth + 12) * (phone() ? 1 : 3); row.scrollBy({ left: -dir * step, behavior: motionOK ? 'smooth' : 'auto' }); }
+function slide(row, dir) { row.scrollBy({ left: -dir * ($('.plate', row).offsetWidth + 12), behavior: motionOK ? 'smooth' : 'auto' }); }
 
 /* the strip follows the scroll; a tap on it drives the scroll */
 const chips = new Map($$('button[data-jump]', rail).map(b => [b.dataset.jump, b]));
@@ -97,7 +103,7 @@ function setCurrent(id) {
   if (id === current) return; current = id;
   chips.forEach((b, k) => b.setAttribute('aria-current', String(k === id)));
   const b = chips.get(id);
-  if (b && phone()) b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: motionOK ? 'smooth' : 'auto' });
+  if (b && phone()) centerIn(rail, b, true);
 }
 function spy() {
   if (Date.now() < jumpingUntil) return;
@@ -113,7 +119,7 @@ function jump(id) {
   const s = $('#cat-' + id); if (!s) return;
   setCurrent(id); jumpingUntil = Date.now() + 1200;
   if (phone()) away(true);
-  s.scrollIntoView({ behavior: motionOK ? 'smooth' : 'auto' });
+  s.scrollIntoView({ behavior: motionOK ? 'smooth' : 'auto', block: 'start' });
 }
 
 /* search — lives in the strip; on a phone the chips step aside for it */
@@ -131,34 +137,105 @@ q.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
 function openSearch() { railBox.classList.add('searching'); q.focus(); }
 function closeSearch() { q.value = ''; q.dispatchEvent(new Event('input')); railBox.classList.remove('searching'); }
 
-/* the dish page — flip through the whole menu from any plate */
-const sheet = $('#item');
-let at = -1;
-function show(k) {
-  if (k < 0 || k >= items.length) return;
-  at = k; const x = items[k];
-  const im = $('.sheet-img', sheet); im.classList.remove('in'); im.src = img(x); im.alt = x.name;
-  $('.sheet-title .eyebrow', sheet).textContent = x.cat.en;
-  $('#item-name').textContent = x.name;
-  $('.sheet-title .en', sheet).textContent = x.en;
-  $('.sheet-price', sheet).innerHTML = `${money(x.price)}<small>JD</small>`;
-  $('.detail', sheet).textContent = x.detail;
-  $('.sheet-bar .count', sheet).innerHTML = `${x.i + 1} / ${x.n}<small>${esc(x.cat.name)}</small>`;
-  $('[data-step="-1"]', sheet).disabled = k === 0;
-  $('[data-step="1"]', sheet).disabled = k === items.length - 1;
-  $('.sheet-body', sheet).scrollTop = 0;
+/* the flip: the plate you touched lifts off the row, turns over, and settles mid-screen. closing flies it back. */
+const pop = $('#pop'), popCard = $('.pop-card', pop), backdrop = $('#pop-backdrop'), tray = $('.tray');
+const FLY = { duration: 640, easing: 'cubic-bezier(.2,.8,.2,1)' }, FLIP = { duration: 640, easing: 'cubic-bezier(.35,.7,.25,1)', fill: 'forwards' };
+let at = -1, hiddenPlate = null, busy = false;
+const plateOf = id => $(`.plate[data-open="${id}"]`);
+function targetRect() {
+  const w = Math.min(innerWidth * 0.9, 420), h = Math.min(w * 1.3, innerHeight * 0.82);
+  return { left: (innerWidth - w) / 2, top: (innerHeight - h) / 2, width: w, height: h };
 }
-function openItem(id) { const k = items.findIndex(x => x.id === id); if (k < 0) return; show(k); sheet.showModal(); }
+function fill(x) {
+  const src = img(x);
+  $('.front-img', pop).src = src; $('.back-bg', pop).src = src;
+  $('.pop-front .name', pop).textContent = x.name; $('.pop-front .en', pop).textContent = x.en; $('.pop-front .price', pop).innerHTML = `${money(x.price)}<small>JD</small>`;
+  $('.back-content .eyebrow', pop).textContent = x.cat.en; $('#pop-name').textContent = x.name; $('.back-content .en', pop).textContent = x.en;
+  $('.back-content .detail', pop).textContent = x.detail; $('.back-content .price', pop).innerHTML = `${money(x.price)}<small>JD</small>`;
+  $('.pop-bar .count', pop).innerHTML = `${x.i + 1} / ${x.n}<small>${esc(x.cat.name)}</small>`;
+  $('[data-step="-1"]', pop).disabled = at === 0; $('[data-step="1"]', pop).disabled = at === items.length - 1;
+}
+function hidePlate(el) { if (hiddenPlate) hiddenPlate.style.visibility = ''; hiddenPlate = el; if (el) el.style.visibility = 'hidden'; }
+function inView(r) { return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; }
+function openFrom(el, k) {
+  if (busy || pop.classList.contains('open')) return;
+  at = k; fill(items[k]);
+  const first = el.getBoundingClientRect(), last = targetRect();
+  Object.assign(pop.style, { left: `${last.left}px`, top: `${last.top}px`, width: `${last.width}px`, height: `${last.height}px` });
+  pop.hidden = false; backdrop.hidden = false; pop.classList.add('open');
+  document.body.classList.add('locked'); tray.classList.add('hide'); hidePlate(el);
+  popCard.getAnimations().forEach(a => a.cancel());
+  if (motionOK) {
+    busy = true;
+    const dx = first.left - last.left, dy = first.top - last.top;
+    pop.animate([{ transform: `translate(${dx}px,${dy}px) scale(${first.width / last.width},${first.height / last.height})` }, { transform: 'none' }], FLY);
+    popCard.animate([{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(180deg)' }], FLIP);
+    backdrop.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, fill: 'forwards' });
+    setTimeout(() => { busy = false; }, FLY.duration);
+  } else popCard.style.transform = 'rotateY(180deg)';
+  pop.focus({ preventScroll: true });
+}
+function close() {
+  if (!pop.classList.contains('open') || busy) return;
+  const x = items[at], el = plateOf(x.id);
+  let dest = null;
+  if (el) {
+    const r0 = el.getBoundingClientRect();
+    if (r0.bottom < 0 || r0.top > innerHeight) window.scrollBy({ top: r0.top - (innerHeight - r0.height) / 2, behavior: 'auto' });
+    centerIn(el.parentElement, el, false);
+    el.style.transition = 'none'; el.classList.add('lit'); void el.offsetWidth;
+    const r = el.getBoundingClientRect(); el.style.transition = '';
+    if (inView(r)) dest = r;
+  }
+  hidePlate(dest ? el : null);
+  let done = false;
+  const finish = () => {
+    if (done) return; done = true; busy = false;
+    pop.classList.remove('open'); pop.hidden = true; backdrop.hidden = true;
+    document.body.classList.remove('locked'); tray.classList.remove('hide');
+    popCard.getAnimations().forEach(a => a.cancel()); popCard.style.transform = '';
+    hidePlate(null); spy();
+    if (el) el.focus({ preventScroll: true });
+  };
+  if (!motionOK) return finish();
+  busy = true;
+  const last = pop.getBoundingClientRect();
+  const to = dest ? `translate(${dest.left - last.left}px,${dest.top - last.top}px) scale(${dest.width / last.width},${dest.height / last.height})` : 'scale(.92)';
+  const a = pop.animate([{ transform: 'none', opacity: 1 }, { transform: to, opacity: dest ? 1 : 0 }], { duration: 520, easing: 'cubic-bezier(.3,.7,.2,1)' });
+  popCard.animate([{ transform: 'rotateY(180deg)' }, { transform: 'rotateY(0deg)' }], { duration: 520, easing: 'cubic-bezier(.3,.7,.2,1)', fill: 'forwards' });
+  backdrop.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, fill: 'forwards' });
+  a.onfinish = finish; setTimeout(finish, 620);
+}
+function step(d) {
+  const k = at + d; if (k < 0 || k >= items.length || busy) return;
+  at = k; hidePlate(null);
+  const content = $('.back-content', pop);
+  if (!motionOK) return fill(items[k]);
+  const out = content.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-d * 16}px)` }], { duration: 140, fill: 'forwards' });
+  let swapped = false;
+  const swap = () => { if (swapped) return; swapped = true; out.cancel(); fill(items[k]); content.animate([{ opacity: 0, transform: `translateX(${d * 16}px)` }, { opacity: 1, transform: 'none' }], { duration: 240, easing: 'ease-out' }); };
+  out.onfinish = swap; setTimeout(swap, 200);
+}
 let tx = 0, ty = 0;
-sheet.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
-sheet.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty; if (Math.abs(dx) > 60 && Math.abs(dy) < 70) show(at + (dx < 0 ? 1 : -1)); }, { passive: true });
-sheet.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') show(at + 1); if (e.key === 'ArrowRight') show(at - 1); });
+pop.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+pop.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > 60 && Math.abs(dy) < 70) step(dx < 0 ? 1 : -1);
+  else if (dy > 90 && Math.abs(dx) < 60 && $('.back-content', pop).scrollTop === 0) close();
+}, { passive: true });
+document.addEventListener('keydown', e => {
+  if (!pop.classList.contains('open')) return;
+  if (e.key === 'Escape') close(); if (e.key === 'ArrowLeft') step(1); if (e.key === 'ArrowRight') step(-1);
+});
+backdrop.addEventListener('click', close);
 
 /* one listener for every control */
 document.addEventListener('click', e => {
   const t = e.target;
-  const o = t.closest('[data-open]'); if (o) return openItem(o.dataset.open);
-  const st = t.closest('[data-step]'); if (st) return show(at + +st.dataset.step);
+  const o = t.closest('[data-open]'); if (o) return openFrom(o, items.findIndex(x => x.id === o.dataset.open));
+  const st = t.closest('[data-step]'); if (st) return step(+st.dataset.step);
+  if (t.closest('[data-pop-close]')) return close();
+  if (t.closest('[data-flipback]') && !t.closest('button, a')) return close();
   const ar = t.closest('[data-arrow]'); if (ar) return slide($('[data-plates]', ar.closest('.chapter')), +ar.dataset.arrow);
   const j = t.closest('[data-jump]'); if (j) return jump(j.dataset.jump);
   if (t.closest('[data-find]')) return openSearch();
@@ -169,8 +246,7 @@ document.addEventListener('click', e => {
 $$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
 
 /* the menu pill hides once you're in the menu */
-const tray = $('.tray');
-new IntersectionObserver(es => tray.classList.toggle('hide', es[0].isIntersecting), { rootMargin: '-120px 0px 0px 0px' }).observe($('#menu'));
+new IntersectionObserver(es => { if (!pop.classList.contains('open')) tray.classList.toggle('hide', es[0].isIntersecting); }, { rootMargin: '-120px 0px 0px 0px' }).observe($('#menu'));
 
 /* films */
 const films = $$('video'), toggle = $('.film-toggle');

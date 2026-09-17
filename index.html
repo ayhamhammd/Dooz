@@ -44,7 +44,7 @@
     <div class="menu-head">
       <span class="eyebrow">The menu</span>
       <h2 class="display">كل مزاج،<br><em>إله اختيار.</em></h2>
-      <p class="sub">اسحب بين الأطباق، واضغط على أي طبق لتشوفه عن قرب.</p>
+      <p class="sub">اسحب بين الأطباق، واضغط على أي طبق لتقلبه وتشوف تفاصيله.</p>
     </div>
     <div class="menu-body">
       <nav class="rail" id="railbox" aria-label="أقسام القائمة">
@@ -135,23 +135,33 @@
 
 <div class="tray"><a href="#menu">المنيو <span aria-hidden="true">↓</span></a></div>
 
-<dialog id="item" aria-labelledby="item-name">
-  <button class="dlg-close" type="button" data-close aria-label="إغلاق">×</button>
-  <div class="sheet-hero">
-    <img class="sheet-img" src="" alt="" width="800" height="600">
-    <span class="sheet-price price"></span>
-    <div class="sheet-title"><span class="eyebrow"></span><h3 id="item-name"></h3><p class="en" dir="ltr"></p></div>
+<div id="pop-backdrop" hidden></div>
+<div id="pop" role="dialog" aria-modal="true" aria-labelledby="pop-name" tabindex="-1" hidden>
+  <div class="pop-card">
+    <div class="pop-face pop-front" aria-hidden="true">
+      <img class="front-img" src="" alt="" width="800" height="600">
+      <span class="cap"><span class="name"></span><span class="en" dir="ltr"></span><span class="price"></span></span>
+    </div>
+    <div class="pop-face pop-back">
+      <img class="back-bg" src="" alt="" aria-hidden="true"><div class="shade"></div><div class="frame"></div>
+      <button class="pop-close" type="button" data-pop-close aria-label="إغلاق">×</button>
+      <div class="back-content" data-flipback>
+        <span class="eyebrow"></span>
+        <h3 id="pop-name"></h3>
+        <p class="en" dir="ltr"></p>
+        <span class="rule-sm" aria-hidden="true"></span>
+        <p class="detail"></p>
+        <p class="note">عند وجود حساسية غذائية، اسأل فريقنا عن المكونات قبل الطلب.</p>
+        <span class="price big"></span>
+      </div>
+      <div class="pop-bar">
+        <button class="btn ghost sm" type="button" data-step="-1"><span aria-hidden="true">→</span> السابق</button>
+        <span class="count"></span>
+        <button class="btn ghost sm" type="button" data-step="1">التالي <span aria-hidden="true">←</span></button>
+      </div>
+    </div>
   </div>
-  <div class="sheet-body">
-    <p class="detail"></p>
-    <p class="note">عند وجود حساسية غذائية، اسأل فريقنا عن المكونات قبل الطلب.</p>
-  </div>
-  <div class="sheet-bar">
-    <button class="btn ghost sm" type="button" data-step="-1"><span aria-hidden="true">→</span> السابق</button>
-    <span class="count"></span>
-    <button class="btn ghost sm" type="button" data-step="1">التالي <span aria-hidden="true">←</span></button>
-  </div>
-</dialog>
+</div>
 
 <dialog id="privacy" aria-labelledby="privacy-title">
   <button class="dlg-close" type="button" data-close aria-label="إغلاق">×</button>
