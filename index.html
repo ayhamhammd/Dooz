@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e0c0a">
+<title>DOOZ Café</title>
+<meta name="description" content="دوز كافيه — قهوة، أطباق وقعدة على إيقاع مختلف في الزرقاء الجديدة، شارع 36. تصفّح المنيو.">
+<link rel="icon" href="assets/mark.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Alexandria:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="menu.js"></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#menu">انتقل إلى المنيو</a>
+
+<header class="top" id="top">
+  <a class="brand" href="#hero" aria-label="DOOZ — الرئيسية"><img src="assets/mark.webp" alt="" width="36" height="36"><span class="word">DOOZ</span></a>
+  <nav class="nav" aria-label="التنقل الرئيسي"><a href="#story">الحكاية</a><a href="#menu">المنيو</a><a href="#moments">الأجواء</a><a href="#visit">زورونا</a></nav>
+  <a class="btn brass sm" href="#menu">المنيو</a>
+</header>
+
+<main>
+<section class="hero" id="hero" aria-label="أهلًا بك في دوز">
+  <video class="film" poster="assets/piano.webp" autoplay loop muted playsinline preload="metadata" aria-hidden="true"><source src="assets/piano.mp4" type="video/mp4"></video>
+  <div class="veil"></div>
+  <div class="moon" aria-hidden="true"></div>
+  <div class="copy">
+    <p class="status" data-status><i></i><span>يوميًا 9:00 صباحًا — 1:00 بعد منتصف الليل</span></p>
+    <span class="eyebrow" id="greeting">A different kind of everyday</span>
+    <h1>قهوة على<br><em>إيقاع مختلف.</em></h1>
+    <p class="lede">شوية قهوة. شوية موسيقى.<br>وكثير من الأوقات اللي بتحبّها.</p>
+    <div class="actions"><a class="btn brass" href="#menu">تصفّح المنيو <span aria-hidden="true">↓</span></a><a class="btn ghost" href="tel:+962796668932">احجز قعدتك</a></div>
+  </div>
+  <div class="hero-foot"><span>الزرقاء الجديدة · شارع 36</span><button class="film-toggle" type="button" aria-pressed="false">إيقاف الحركة</button></div>
+</section>
+
+<div class="rule" aria-hidden="true"><span>✦</span></div>
+
+<section class="story" id="story">
+  <div class="wrap">
+    <div class="text">
+      <span class="eyebrow">More than a cup</span>
+      <h2 class="display">بعض الأماكن تزورها.<br><em>وبعضها… تعيشها.</em></h2>
+      <p class="sub">بين أول رشفة وآخر حديث، في تفاصيل بتخلّي القعدة غير. ضوّ دافي، نغمة بيانو، وطبق يجمعنا حول نفس الطاولة.</p>
+      <p class="sub">هذا هو دوز. مساحة صغيرة ليوم أحلى.</p>
+      <a class="textlink" href="#moments">خذ لك لفة في المكان <span aria-hidden="true">↓</span></a>
+    </div>
+    <div class="scene">
+      <div class="arch"><video autoplay muted playsinline loop preload="none" poster="assets/coffee.webp" aria-hidden="true"><source src="assets/coffee.mp4" type="video/mp4"></video></div>
+      <span class="stamp" aria-hidden="true">Take a sip<b>تمهّل.</b>Stay a little</span>
+    </div>
+  </div>
+</section>
+
+<section class="menu" id="menu">
+  <div class="wrap">
+    <div class="menu-head">
+      <span class="eyebrow">The menu</span>
+      <h2 class="display">كل مزاج،<br><em>إله اختيار.</em></h2>
+      <p class="sub">اضغط على أي صنف لتشوف تفاصيله، أو اضغط <b>+</b> لتضيفه لقائمتك وتعرضها للنادل لما تطلب.</p>
+    </div>
+    <div class="menu-body">
+      <nav class="rail" id="railbox" aria-label="أقسام القائمة">
+        <div class="rail-search">
+          <label class="vh" for="q">ابحث عن أي صنف</label>
+          <input id="q" type="search" placeholder="ابحث: قهوة، باستا، حلو…" autocomplete="off" enterkeyhint="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <button class="cancel" type="button" data-find-close>إلغاء</button>
+        </div>
+        <ul id="rail"></ul>
+      </nav>
+      <div>
+        <div id="sections"></div>
+        <p id="empty" class="empty" hidden>ما لقينا هذا الصنف.<br>جرّب اسمًا ثانيًا.</p>
+        <p class="foot-note">صور الأصناف تمثيلية. عند وجود حساسية غذائية، اسأل فريقنا عن المكونات قبل الطلب.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="moments" id="moments">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><span class="eyebrow">Inside DOOZ</span><h2 class="display">المكان له <em>روحه.</em></h2></div>
+      <p class="sub">لقطات من داخل دوز.<br>قعدتك الجاية بتستناك.</p>
+    </div>
+    <div class="gallery">
+      <figure><img src="assets/piano-original.webp" alt="البيانو والقمر المضيء داخل دوز" loading="lazy" decoding="async" width="720" height="1280"><figcaption>نغمة وضوّ قمر</figcaption></figure>
+      <figure><img src="assets/salad-original.webp" alt="أطباق على طاولات دوز" loading="lazy" decoding="async" width="720" height="1280"><figcaption>على نفس الطاولة</figcaption></figure>
+      <figure><img src="assets/room-original.webp" alt="المقاعد والتفاصيل الداخلية في دوز" loading="lazy" decoding="async" width="720" height="1280"><figcaption>زاويتك المفضّلة</figcaption></figure>
+    </div>
+    <a class="insta textlink" href="https://www.instagram.com/dooz.cafe/" target="_blank" rel="noopener">المزيد من لحظاتنا على إنستجرام <span>@dooz.cafe ↗</span></a>
+  </div>
+</section>
+
+<section class="offers" id="offers">
+  <div class="wrap">
+    <div class="postcard">
+      <span class="star" aria-hidden="true">✦</span>
+      <div>
+        <span class="eyebrow">The DOOZ list</span>
+        <h2 class="display">خليك قريب.<br><em>الحلو لسه جاي.</em></h2>
+        <p class="sub">ابعتلنا كلمة على واتساب وخليك أول من يعرف بجديد دوز وآخر العروض.</p>
+      </div>
+      <div class="stack">
+        <a class="btn night" href="https://wa.me/962796668932?text=مرحبا دوز 👋 بدي أشترك بآخر العروض" target="_blank" rel="noopener">اشتركني بالعروض <span aria-hidden="true">↗</span></a>
+        <a class="btn outline-dark" href="https://www.instagram.com/dooz.cafe/" target="_blank" rel="noopener">تابعنا على إنستجرام</a>
+        <p class="tiny">كيف كانت قعدتك؟ <a href="https://search.google.com/local/writereview?placeid=ChIJM_R4YABvGxURzZPbSfCwRXo" target="_blank" rel="noopener">قيّمنا على Google</a> أو <a href="https://wa.me/962796668932?text=مرحبا دوز، حابب أشارككم رأيي بتجربتي:" target="_blank" rel="noopener">احكيلنا على واتساب</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="visit" id="visit">
+  <div class="wrap">
+    <span class="eyebrow">See you at DOOZ</span>
+    <h2 class="display">نفس المكان.<br><em>كل مرة إحساس جديد.</em></h2>
+    <div class="grid3">
+      <div class="cell"><small>Where</small><p>الزرقاء الجديدة، شارع 36<br>مقابل صيدلية الزرقاء الحديثة</p></div>
+      <div class="cell"><small>Hours</small><p>يوميًا<br><span dir="ltr">9:00 AM — 1:00 AM</span></p><p class="status" data-status><i></i><span>…</span></p></div>
+      <div class="cell"><small>Call</small><p><a href="tel:+962796668932" dir="ltr">079 666 8932</a><br>للحجز والاستفسار</p></div>
+    </div>
+    <div class="actions"><a class="btn brass" href="https://maps.app.goo.gl/gS1gAsDG6PwLtqRD6" target="_blank" rel="noopener">خذني إلى دوز <span aria-hidden="true">↗</span></a><a class="btn ghost" href="tel:+962796668932">اتصل فينا</a></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <a class="wordmark" href="#hero">DOOZ<span>CAFE &amp; MORE</span></a>
+  <div class="foot-row"><span>© <span id="year">2026</span> DOOZ CAFE · الزرقاء الجديدة</span><button type="button" data-privacy>الخصوصية</button><a href="#menu">المنيو ↑</a></div>
+</footer>
+
+<div class="tray"><button id="tray" type="button" data-mode="menu">المنيو <span aria-hidden="true">↓</span></button></div>
+
+<dialog id="item" aria-labelledby="item-name">
+  <button class="dlg-close" type="button" data-close aria-label="إغلاق">×</button>
+  <div class="sheet-hero">
+    <img class="sheet-img" src="" alt="" width="800" height="600">
+    <span class="sheet-price price"></span>
+    <div class="sheet-title"><span class="eyebrow"></span><h3 id="item-name"></h3><p class="en" dir="ltr"></p></div>
+  </div>
+  <div class="sheet-body">
+    <p class="detail"></p>
+    <p class="note">عند وجود حساسية غذائية، اسأل فريقنا عن المكونات قبل الطلب.</p>
+  </div>
+  <div class="sheet-bar">
+    <div class="qty" hidden><button type="button" data-qty="" data-d="-1" aria-label="أنقص">−</button><span>0</span><button type="button" data-qty="" data-d="1" aria-label="زد">+</button></div>
+    <button class="btn brass" type="button" data-sheet-action="add">أضف إلى قائمتي</button>
+  </div>
+</dialog>
+
+<dialog id="list" aria-labelledby="list-title">
+  <button class="dlg-close" type="button" data-close aria-label="إغلاق">×</button>
+  <div class="list-body">
+    <h3 id="list-title">قائمتك</h3>
+    <div id="list-lines"></div>
+    <div class="total"><span>المجموع</span><span class="price" id="list-total">0.00<small>JD</small></span></div>
+    <p class="hint">هاي قائمتك إنت بس — محفوظة على جهازك. اعرضها للنادل عند الطلب، والدفع عند الطاولة كالعادة.</p>
+    <div class="list-actions"><button class="btn ghost sm" type="button" id="list-clear">مسح القائمة</button><button class="btn brass sm" type="button" data-close>تمام</button></div>
+  </div>
+</dialog>
+
+<dialog id="privacy" aria-labelledby="privacy-title">
+  <button class="dlg-close" type="button" data-close aria-label="إغلاق">×</button>
+  <div class="dlg-text">
+    <span class="eyebrow">Your privacy</span>
+    <h3 id="privacy-title">خصوصيتك تهمّنا.</h3>
+    <p>هذا الموقع لا يجمع أي بيانات ولا يستخدم ملفات تتبّع. قائمتك تُحفظ على جهازك فقط ولا تُرسل لأي مكان.</p>
+    <p>التواصل معنا يتم عبر واتساب أو الاتصال، وروابط Google Maps وإنستجرام تنقلك إلى خدمات خارجية لها سياسات خصوصية مستقلة.</p>
+    <p>لطلب حذف رقمك من قائمة العروض تواصل مع المحل على <a href="tel:+962796668932" dir="ltr">0796668932</a>.</p>
+  </div>
+</dialog>
+</body>
+</html>
