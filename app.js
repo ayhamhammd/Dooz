@@ -160,17 +160,21 @@ function fill(x) {
 }
 function hidePlate(el) { if (hiddenPlate) hiddenPlate.style.visibility = ''; hiddenPlate = el; if (el) el.style.visibility = 'hidden'; }
 function inView(r) { return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; }
+const box = r => ({ left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
 function openFrom(el, k) {
   if (busy || closing || pop.classList.contains('open')) return;
   at = originAt = k; origin = el; fill(items[k]);
+  if (!el.classList.contains('lit')) {   /* a tapped neighbour becomes the centred, lit plate before the card lifts */
+    centerIn(el.closest('[data-plates]'), el, false);
+    el.style.transition = 'none'; el.classList.add('lit'); void el.offsetWidth; el.style.transition = '';
+  }
   const first = el.getBoundingClientRect(), last = targetRect();
-  Object.assign(pop.style, { left: `${last.left}px`, top: `${last.top}px`, width: `${last.width}px`, height: `${last.height}px` });
+  Object.assign(pop.style, box(last));
   pop.hidden = false; backdrop.hidden = false; pop.classList.add('open'); hidePlate(el);
   pop.getAnimations().forEach(a => a.cancel()); popCard.getAnimations().forEach(a => a.cancel()); backdrop.getAnimations().forEach(a => a.cancel());
   if (motionOK) {
     busy = true;
-    const dx = first.left - last.left, dy = first.top - last.top;
-    pop.animate([{ transform: `translate(${dx}px,${dy}px) scale(${first.width / last.width},${first.height / last.height})` }, { transform: 'none' }], FLY);
+    pop.animate([box(first), box(last)], FLY);
     popCard.animate([{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(180deg)' }], FLIP);
     backdrop.animate([{ opacity: 0, backdropFilter: 'blur(0px)', webkitBackdropFilter: 'blur(0px)' }, { opacity: 1, backdropFilter: 'blur(10px)', webkitBackdropFilter: 'blur(10px)' }], { duration: 480, fill: 'forwards' });
     setTimeout(() => { busy = false; }, FLY.duration);
@@ -190,23 +194,22 @@ function close() {
     if (done) return; done = true; busy = false; closing = false;
     pop.classList.remove('open'); pop.hidden = true; backdrop.hidden = true;
     pop.getAnimations().forEach(a => a.cancel()); popCard.getAnimations().forEach(a => a.cancel()); backdrop.getAnimations().forEach(a => a.cancel());
-    popCard.style.transform = '';
+    popCard.style.transform = ''; pop.style.opacity = ''; pop.style.transform = '';
     hidePlate(null);
     if (el) el.focus({ preventScroll: true });
   };
   if (!motionOK) return finish();
-  /* if the card is still in flight, pick it up from exactly where it is */
+  /* pick the card up from exactly where it is, even mid-flight */
   const cur = pop.getBoundingClientRect();
-  const last = { left: parseFloat(pop.style.left), top: parseFloat(pop.style.top), width: parseFloat(pop.style.width), height: parseFloat(pop.style.height) };
-  const fromT = busy ? `translate(${cur.left - last.left}px,${cur.top - last.top}px) scale(${cur.width / last.width},${cur.height / last.height})` : 'none';
   let angle = 180;
   if (busy) { const m = new DOMMatrix(getComputedStyle(popCard).transform); angle = Math.round(Math.acos(Math.max(-1, Math.min(1, m.m11))) * 180 / Math.PI); }
   const shade = parseFloat(getComputedStyle(backdrop).opacity) || 1;
   pop.getAnimations().forEach(a => a.cancel()); popCard.getAnimations().forEach(a => a.cancel()); backdrop.getAnimations().forEach(a => a.cancel());
   busy = true;
-  const to = dest ? `translate(${dest.left - last.left}px,${dest.top - last.top}px) scale(${dest.width / last.width},${dest.height / last.height})` : 'scale(.92)';
   const ease = 'cubic-bezier(.3,.7,.2,1)', dur = Math.max(260, Math.round(520 * angle / 180));
-  const a = pop.animate([{ transform: fromT, opacity: 1 }, { transform: to, opacity: dest ? 1 : 0 }], { duration: dur, easing: ease });
+  let a;
+  if (dest) { Object.assign(pop.style, box(dest)); a = pop.animate([box(cur), box(dest)], { duration: dur, easing: ease }); }
+  else { Object.assign(pop.style, box(cur)); a = pop.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.94)' }], { duration: dur, easing: ease, fill: 'forwards' }); }
   popCard.animate([{ transform: `rotateY(${angle}deg)` }, { transform: 'rotateY(0deg)' }], { duration: dur, easing: ease, fill: 'forwards' });
   backdrop.animate([{ opacity: shade, backdropFilter: `blur(${10 * shade}px)`, webkitBackdropFilter: `blur(${10 * shade}px)` }, { opacity: 0, backdropFilter: 'blur(0px)', webkitBackdropFilter: 'blur(0px)' }], { duration: dur, easing: 'ease-in', fill: 'forwards' });
   a.onfinish = finish; setTimeout(finish, dur + 100);

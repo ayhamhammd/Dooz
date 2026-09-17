@@ -241,17 +241,17 @@ dialog::backdrop{background:rgba(8,6,4,.78);backdrop-filter:blur(8px);-webkit-ba
 
 /* the flip — the plate you touched lifts off the row, turns over, and settles in the middle of the screen */
 #pop-backdrop{position:fixed;inset:0;z-index:60;background:rgba(8,6,4,.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);touch-action:none}
-#pop{position:fixed;z-index:61;transform-origin:0 0;perspective:1500px;outline:none;will-change:transform;touch-action:pan-y}
+#pop{position:fixed;z-index:61;perspective:1500px;outline:none;touch-action:pan-y}
 .pop-card{position:relative;width:100%;height:100%;transform-style:preserve-3d;-webkit-transform-style:preserve-3d}
-.pop-face{position:absolute;inset:0;border-radius:22px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#1a1512;box-shadow:0 0 0 1px rgba(201,162,94,.35),0 30px 80px rgba(0,0,0,.6)}
+.pop-face{position:absolute;inset:0;border-radius:20px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#1a1512;box-shadow:0 0 0 1px rgba(201,162,94,.4),0 24px 60px rgba(0,0,0,.55)}
 .pop-front{pointer-events:none}
 .pop-front img{width:100%;height:100%;object-fit:cover}
-.pop-front::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(14,12,10,.94) 0,rgba(14,12,10,.5) 30%,transparent 58%)}
+.pop-front::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(14,12,10,.94) 0,rgba(14,12,10,.5) 30%,transparent 58%),linear-gradient(to bottom,rgba(227,192,124,.08),transparent 30%)}
 .pop-front .cap{position:absolute;inset-inline:18px;bottom:16px;z-index:1;display:grid;gap:2px}
-.pop-front .name{font:400 27px/1.3 var(--ruqaa);color:var(--marble);text-shadow:0 2px 16px rgba(0,0,0,.55)}
-.pop-front .en{font:italic 400 14.5px/1.3 var(--serif);color:var(--marble-2);text-align:end}
+.pop-front .name{font:400 27px/1.3 var(--ruqaa);color:var(--marble);text-shadow:0 2px 16px rgba(0,0,0,.55);text-wrap:balance}
+.pop-front .en{font:italic 400 14.5px/1.3 var(--serif);color:var(--marble-2);text-align:end;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pop-front .price{margin-top:6px}
-.pop-back{transform:rotateY(180deg) translateZ(1px);background:var(--wall);display:flex;flex-direction:column;pointer-events:auto}
+.pop-back{transform:rotateY(180deg) translateZ(1px);background:var(--wall);display:flex;flex-direction:column;pointer-events:auto;box-shadow:0 0 0 1px rgba(201,162,94,.4),0 30px 80px rgba(0,0,0,.65)}
 .pop-back .back-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.3;filter:saturate(.85)}
 .pop-back .shade{position:absolute;inset:0;background:linear-gradient(to top,var(--wall) 42%,rgba(23,19,16,.55) 100%)}
 .pop-back .frame{position:absolute;inset:11px;border:1px solid rgba(201,162,94,.35);border-radius:15px;pointer-events:none}
