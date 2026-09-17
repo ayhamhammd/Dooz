@@ -18,7 +18,7 @@
 
 <header class="top" id="top">
   <a class="brand" href="#hero" aria-label="DOOZ — الرئيسية"><img src="assets/mark.webp" alt="" width="36" height="36"><span class="word">DOOZ</span></a>
-  <nav class="nav" aria-label="التنقل الرئيسي"><a href="#story">الحكاية</a><a href="#menu">المنيو</a><a href="#moments">الأجواء</a><a href="#visit">زورونا</a></nav>
+  <nav class="nav" aria-label="التنقل الرئيسي"><a href="#menu">المنيو</a><a href="#story">الحكاية</a><a href="#moments">الأجواء</a><a href="#visit">زورونا</a></nav>
   <a class="btn brass sm" href="#menu">المنيو</a>
 </header>
 
@@ -39,28 +39,12 @@
 
 <div class="rule" aria-hidden="true"><span>✦</span></div>
 
-<section class="story" id="story">
-  <div class="wrap">
-    <div class="text">
-      <span class="eyebrow">More than a cup</span>
-      <h2 class="display">بعض الأماكن تزورها.<br><em>وبعضها… تعيشها.</em></h2>
-      <p class="sub">بين أول رشفة وآخر حديث، في تفاصيل بتخلّي القعدة غير. ضوّ دافي، نغمة بيانو، وطبق يجمعنا حول نفس الطاولة.</p>
-      <p class="sub">هذا هو دوز. مساحة صغيرة ليوم أحلى.</p>
-      <a class="textlink" href="#moments">خذ لك لفة في المكان <span aria-hidden="true">↓</span></a>
-    </div>
-    <div class="scene">
-      <div class="arch"><video autoplay muted playsinline loop preload="none" poster="assets/coffee.webp" aria-hidden="true"><source src="assets/coffee.mp4" type="video/mp4"></video></div>
-      <span class="stamp" aria-hidden="true">Take a sip<b>تمهّل.</b>Stay a little</span>
-    </div>
-  </div>
-</section>
-
 <section class="menu" id="menu">
   <div class="wrap">
     <div class="menu-head">
       <span class="eyebrow">The menu</span>
       <h2 class="display">كل مزاج،<br><em>إله اختيار.</em></h2>
-      <p class="sub">اضغط على أي صنف لتشوف تفاصيله، أو اضغط <b>+</b> لتضيفه لقائمتك وتعرضها للنادل لما تطلب.</p>
+      <p class="sub">اسحب بين الأطباق، واضغط على أي طبق لتشوفه عن قرب.</p>
     </div>
     <div class="menu-body">
       <nav class="rail" id="railbox" aria-label="أقسام القائمة">
@@ -73,10 +57,26 @@
         <ul id="rail"></ul>
       </nav>
       <div>
-        <div id="sections"></div>
+        <div id="chapters"></div>
         <p id="empty" class="empty" hidden>ما لقينا هذا الصنف.<br>جرّب اسمًا ثانيًا.</p>
         <p class="foot-note">صور الأصناف تمثيلية. عند وجود حساسية غذائية، اسأل فريقنا عن المكونات قبل الطلب.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="story" id="story">
+  <div class="wrap">
+    <div class="text">
+      <span class="eyebrow">More than a cup</span>
+      <h2 class="display">بعض الأماكن تزورها.<br><em>وبعضها… تعيشها.</em></h2>
+      <p class="sub">بين أول رشفة وآخر حديث، في تفاصيل بتخلّي القعدة غير. ضوّ دافي، نغمة بيانو، وطبق يجمعنا حول نفس الطاولة.</p>
+      <p class="sub">هذا هو دوز. مساحة صغيرة ليوم أحلى.</p>
+      <a class="textlink" href="#moments">خذ لك لفة في المكان <span aria-hidden="true">↓</span></a>
+    </div>
+    <div class="scene">
+      <div class="arch"><video autoplay muted playsinline loop preload="none" poster="assets/coffee.webp" aria-hidden="true"><source src="assets/coffee.mp4" type="video/mp4"></video></div>
+      <span class="stamp" aria-hidden="true">Take a sip<b>تمهّل.</b>Stay a little</span>
     </div>
   </div>
 </section>
@@ -133,7 +133,7 @@
   <div class="foot-row"><span>© <span id="year">2026</span> DOOZ CAFE · الزرقاء الجديدة</span><button type="button" data-privacy>الخصوصية</button><a href="#menu">المنيو ↑</a></div>
 </footer>
 
-<div class="tray"><button id="tray" type="button" data-mode="menu">المنيو <span aria-hidden="true">↓</span></button></div>
+<div class="tray"><a href="#menu">المنيو <span aria-hidden="true">↓</span></a></div>
 
 <dialog id="item" aria-labelledby="item-name">
   <button class="dlg-close" type="button" data-close aria-label="إغلاق">×</button>
@@ -147,19 +147,9 @@
     <p class="note">عند وجود حساسية غذائية، اسأل فريقنا عن المكونات قبل الطلب.</p>
   </div>
   <div class="sheet-bar">
-    <div class="qty" hidden><button type="button" data-qty="" data-d="-1" aria-label="أنقص">−</button><span>0</span><button type="button" data-qty="" data-d="1" aria-label="زد">+</button></div>
-    <button class="btn brass" type="button" data-sheet-action="add">أضف إلى قائمتي</button>
-  </div>
-</dialog>
-
-<dialog id="list" aria-labelledby="list-title">
-  <button class="dlg-close" type="button" data-close aria-label="إغلاق">×</button>
-  <div class="list-body">
-    <h3 id="list-title">قائمتك</h3>
-    <div id="list-lines"></div>
-    <div class="total"><span>المجموع</span><span class="price" id="list-total">0.00<small>JD</small></span></div>
-    <p class="hint">هاي قائمتك إنت بس — محفوظة على جهازك. اعرضها للنادل عند الطلب، والدفع عند الطاولة كالعادة.</p>
-    <div class="list-actions"><button class="btn ghost sm" type="button" id="list-clear">مسح القائمة</button><button class="btn brass sm" type="button" data-close>تمام</button></div>
+    <button class="btn ghost sm" type="button" data-step="-1"><span aria-hidden="true">→</span> السابق</button>
+    <span class="count"></span>
+    <button class="btn ghost sm" type="button" data-step="1">التالي <span aria-hidden="true">←</span></button>
   </div>
 </dialog>
 
@@ -168,7 +158,7 @@
   <div class="dlg-text">
     <span class="eyebrow">Your privacy</span>
     <h3 id="privacy-title">خصوصيتك تهمّنا.</h3>
-    <p>هذا الموقع لا يجمع أي بيانات ولا يستخدم ملفات تتبّع. قائمتك تُحفظ على جهازك فقط ولا تُرسل لأي مكان.</p>
+    <p>هذا الموقع صفحة ثابتة: لا يجمع أي بيانات، لا يستخدم ملفات تتبّع، ولا يخزّن شيئًا عنك.</p>
     <p>التواصل معنا يتم عبر واتساب أو الاتصال، وروابط Google Maps وإنستجرام تنقلك إلى خدمات خارجية لها سياسات خصوصية مستقلة.</p>
     <p>لطلب حذف رقمك من قائمة العروض تواصل مع المحل على <a href="tel:+962796668932" dir="ltr">0796668932</a>.</p>
   </div>

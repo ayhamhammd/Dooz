@@ -1,18 +1,19 @@
-// DOOZ — menu, rail, dish page, tally. No backend: the menu is menu.js, the tally lives in localStorage.
+// DOOZ — a static menu. Rows of plates you swipe through, a dish page you can flip like a book. No cart, no storage.
 (() => {
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const motionOK = !matchMedia('(prefers-reduced-motion: reduce)').matches;
 const phone = () => innerWidth < 1024;
 const data = window.DOOZ_MENU || [];
-const items = []; data.forEach(c => c.items.forEach(x => items.push({ ...x, cat: c })));
+const items = []; data.forEach(c => c.items.forEach((x, i) => items.push({ ...x, cat: c, i, n: c.items.length })));
 const byId = new Map(items.map(x => [x.id, x]));
 const money = n => n.toFixed(2);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const img = x => x.image_url || `assets/menu/${x.id}.webp`;
 
-/* the header: solid once the hero scrolls; on a phone it slides away while you browse the menu */
-const top = $('.top');
+/* the header: solid once the hero scrolls; on a phone it slides away while you browse the menu.
+   the hero film drifts at a quarter of the page's speed. */
+const top = $('.top'), film = $('.film'), hero = $('.hero');
 let lastY = scrollY;
 function away(v) { top.classList.toggle('away', v); document.documentElement.style.setProperty('--rail-top', v ? '0px' : getComputedStyle(top).height); }
 function chrome() {
@@ -20,9 +21,9 @@ function chrome() {
   top.classList.toggle('solid', y > 24);
   if (phone()) { if (y > 160 && y > lastY + 3) away(true); else if (y < lastY - 3 || y <= 160) away(false); }
   else away(false);
+  if (motionOK && y < hero.offsetHeight) film.style.transform = `translateY(${y * 0.25}px)`;
   lastY = y;
 }
-addEventListener('scroll', chrome, { passive: true }); chrome();
 
 /* the clock: Amman time, open 9:00 to 01:00 daily */
 function hourInAmman() {
@@ -59,25 +60,38 @@ const ICON_FOR = { hot: 'cup', coffee: 'cup', juice: 'glass', smoothie: 'glass',
 const SHORT = { hot: 'ساخنة', coffee: 'قهوة', juice: 'عصائر', smoothie: 'سموذي', milkshake: 'ميلك شيك', frappe: 'فرابيه', refresh: 'موهيتو', dessert: 'حلويات', breakfast: 'فطور', pizza: 'بيتزا', burger: 'برجر', pasta: 'باستا', snacks: 'سناكات', appetizer: 'مقبلات', salad: 'سلطات', shisha: 'أراجيل' };
 const icon = id => `<svg viewBox="0 0 104 104" aria-hidden="true">${ICONS[ICON_FOR[id]] || ICONS.dish}</svg>`;
 
-/* render */
+/* render: the strip, then one chapter per category with its row of plates */
 const railBox = $('#railbox'), rail = $('#rail'), q = $('#q');
 rail.innerHTML = `<li><button type="button" class="find" data-find aria-label="بحث"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button></li>` +
   data.map(c => `<li><button type="button" data-jump="${c.id}" aria-current="false">${icon(c.id)}<span class="short">${esc(SHORT[c.id] || c.name)}</span><span class="full">${esc(c.name)}</span><span class="n">${c.items.length}</span></button></li>`).join('');
-const row = x => `<article class="item" data-id="${x.id}">
-  <button type="button" class="open" data-open="${x.id}">
-    <img src="${img(x)}" alt="" loading="lazy" decoding="async" width="84" height="84">
-    <span class="text"><h4>${esc(x.name)}</h4><span class="en" dir="ltr">${esc(x.en)}</span><span class="price">${money(x.price)}<small>JD</small></span></span>
-  </button>
-  <button type="button" class="add" data-add="${x.id}" aria-label="أضف ${esc(x.name)} إلى قائمتي">+</button>
-</article>`;
-$('#sections').innerHTML = data.map(c => `<section class="cat" id="cat-${c.id}" data-cat="${c.id}" aria-labelledby="h-${c.id}">
-  <div class="cat-head">${icon(c.id)}<h3 id="h-${c.id}">${esc(c.name)}</h3><span class="meta">${esc(c.en)}<b>${c.items.length}</b></span></div>
-  <div class="list">${c.items.map(row).join('')}</div>
+const plate = x => `<button type="button" class="plate" data-open="${x.id}" aria-label="${esc(x.name)}، ${money(x.price)} دينار">
+  <img src="${img(x)}" alt="" loading="lazy" decoding="async" width="800" height="600">
+  <span class="cap"><span class="name">${esc(x.name)}</span><span class="en" dir="ltr">${esc(x.en)}</span><span class="price">${money(x.price)}<small>JD</small></span></span>
+</button>`;
+$('#chapters').innerHTML = data.map((c, ci) => `<section class="chapter" id="cat-${c.id}" data-cat="${c.id}" aria-labelledby="h-${c.id}">
+  <div class="chapter-head">${icon(c.id)}<h3 id="h-${c.id}">${esc(c.name)}</h3><span class="meta">${esc(c.en)}</span><span class="count" data-count>1 / ${c.items.length}</span><span class="arrows"><button type="button" data-arrow="-1" aria-label="السابق">→</button><button type="button" data-arrow="1" aria-label="التالي">←</button></span></div>
+  ${ci === 0 ? '<p class="swipe-hint" id="swipe-hint"><b aria-hidden="true">←</b> اسحب لتشوف باقي الأطباق</p>' : ''}
+  <div class="plates" data-plates>${c.items.map(plate).join('')}</div>
 </section>`).join('');
 
-/* the rail follows the scroll; a tap on it drives the scroll */
+/* plates fade in as their photo arrives; the one in the middle of the row is lit */
+document.addEventListener('load', e => { if (e.target.tagName === 'IMG') e.target.classList.add('in'); }, true);
+$$('img').forEach(im => { if (im.complete && im.naturalWidth) im.classList.add('in'); });
+const hint = $('#swipe-hint');
+$$('[data-plates]').forEach(row => {
+  const plates = $$('.plate', row), count = $('[data-count]', row.parentElement);
+  const lit = new IntersectionObserver(es => es.forEach(e => {
+    e.target.classList.toggle('lit', e.isIntersecting);
+    if (e.isIntersecting) count.textContent = `${plates.indexOf(e.target) + 1} / ${plates.length}`;
+  }), { root: row, threshold: 0.7 });
+  plates.forEach(p => lit.observe(p));
+  row.addEventListener('scroll', () => hint && hint.classList.add('gone'), { passive: true, once: true });
+});
+function slide(row, dir) { const step = ($('.plate', row).offsetWidth + 12) * (phone() ? 1 : 3); row.scrollBy({ left: -dir * step, behavior: motionOK ? 'smooth' : 'auto' }); }
+
+/* the strip follows the scroll; a tap on it drives the scroll */
 const chips = new Map($$('button[data-jump]', rail).map(b => [b.dataset.jump, b]));
-const sections = $$('.cat');
+const chapters = $$('.chapter');
 let current = null, jumpingUntil = 0;
 function setCurrent(id) {
   if (id === current) return; current = id;
@@ -89,11 +103,11 @@ function spy() {
   if (Date.now() < jumpingUntil) return;
   const offset = phone() ? railBox.getBoundingClientRect().bottom + 12 : parseInt(getComputedStyle(top).height) + 30;
   let hit = null;
-  for (const s of sections) { if (s.hidden) continue; if (s.getBoundingClientRect().top <= offset) hit = s; else break; }
+  for (const s of chapters) { if (s.hidden) continue; if (s.getBoundingClientRect().top <= offset) hit = s; else break; }
   if (hit) setCurrent(hit.dataset.cat);
 }
 let ticking = false;
-addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; spy(); }); } }, { passive: true });
+addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; chrome(); spy(); }); } }, { passive: true });
 addEventListener('scrollend', () => { jumpingUntil = 0; spy(); });
 function jump(id) {
   const s = $('#cat-' + id); if (!s) return;
@@ -106,9 +120,9 @@ function jump(id) {
 const norm = s => s.toLowerCase().normalize('NFKD').replace(/[ً-ٰٟ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي');
 q.addEventListener('input', () => {
   const s = norm(q.value.trim()); let shown = 0;
-  sections.forEach(sec => {
+  chapters.forEach(sec => {
     let n = 0;
-    $$('.item', sec).forEach(el => { const x = byId.get(el.dataset.id); const ok = !s || norm(`${x.name} ${x.en} ${x.cat.name} ${x.cat.en}`).includes(s); el.hidden = !ok; if (ok) n++; });
+    $$('.plate', sec).forEach(el => { const x = byId.get(el.dataset.open); const ok = !s || norm(`${x.name} ${x.en} ${x.cat.name} ${x.cat.en}`).includes(s); el.hidden = !ok; if (ok) n++; });
     sec.hidden = n === 0; shown += n;
   });
   $('#empty').hidden = shown > 0;
@@ -117,71 +131,35 @@ q.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
 function openSearch() { railBox.classList.add('searching'); q.focus(); }
 function closeSearch() { q.value = ''; q.dispatchEvent(new Event('input')); railBox.classList.remove('searching'); }
 
-/* the dish page */
+/* the dish page — flip through the whole menu from any plate */
 const sheet = $('#item');
-function openItem(id) {
-  const x = byId.get(id); if (!x) return;
-  const im = $('.sheet-img', sheet); im.src = img(x); im.alt = x.name;
+let at = -1;
+function show(k) {
+  if (k < 0 || k >= items.length) return;
+  at = k; const x = items[k];
+  const im = $('.sheet-img', sheet); im.classList.remove('in'); im.src = img(x); im.alt = x.name;
   $('.sheet-title .eyebrow', sheet).textContent = x.cat.en;
   $('#item-name').textContent = x.name;
   $('.sheet-title .en', sheet).textContent = x.en;
   $('.sheet-price', sheet).innerHTML = `${money(x.price)}<small>JD</small>`;
   $('.detail', sheet).textContent = x.detail;
-  $$('[data-qty]', sheet).forEach(b => b.dataset.qty = id);
-  sheet.dataset.id = id; paintSheet();
-  sheet.showModal(); $('.sheet-body', sheet).scrollTop = 0;
+  $('.sheet-bar .count', sheet).innerHTML = `${x.i + 1} / ${x.n}<small>${esc(x.cat.name)}</small>`;
+  $('[data-step="-1"]', sheet).disabled = k === 0;
+  $('[data-step="1"]', sheet).disabled = k === items.length - 1;
+  $('.sheet-body', sheet).scrollTop = 0;
 }
-function paintSheet() {
-  const id = sheet.dataset.id, x = byId.get(id); if (!x) return;
-  const n = list[id] || 0, qty = $('.sheet-bar .qty', sheet), btn = $('[data-sheet-action]', sheet);
-  qty.hidden = n === 0; $('span', qty).textContent = n;
-  btn.dataset.sheetAction = n ? 'done' : 'add';
-  btn.innerHTML = n ? `تمام · <span class="price" style="color:inherit">${money(x.price * n)} JD</span>` : `أضف إلى قائمتي · <span class="price" style="color:inherit">${money(x.price)} JD</span>`;
-}
-
-/* the tally */
-let list = (() => { try { return JSON.parse(localStorage.getItem('dooz.list') || '{}'); } catch { return {}; } })();
-const save = () => { try { localStorage.setItem('dooz.list', JSON.stringify(list)); } catch {} };
-const count = () => Object.values(list).reduce((a, b) => a + b, 0);
-const total = () => Object.entries(list).reduce((a, [id, n]) => a + n * (byId.get(id)?.price || 0), 0);
-function add(id, d) {
-  if (!byId.has(id)) return;
-  const n = (list[id] || 0) + d;
-  if (n <= 0) delete list[id]; else list[id] = n;
-  save(); paint();
-  if (d > 0) { const b = $('#tray'); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); }
-}
-function paintAdds() { $$('.item .add').forEach(b => { const n = list[b.dataset.add] || 0; b.classList.toggle('on', n > 0); b.textContent = n > 0 ? n : '+'; }); }
-const tray = $('.tray'), trayBtn = $('#tray');
-let inMenu = false;
-new IntersectionObserver(es => { inMenu = es[0].isIntersecting; paintTray(); }, { rootMargin: '-120px 0px 0px 0px' }).observe($('#menu'));
-function paintTray() {
-  const n = count();
-  if (n) { trayBtn.innerHTML = `<span class="pill-n">${n}</span>قائمتي<span class="tot">${money(total())} JD</span>`; trayBtn.dataset.mode = 'list'; tray.classList.remove('hide'); }
-  else { trayBtn.innerHTML = 'المنيو <span aria-hidden="true">↓</span>'; trayBtn.dataset.mode = 'menu'; tray.classList.toggle('hide', inMenu); }
-}
-function paintList() {
-  const rows = Object.entries(list).map(([id, n]) => [byId.get(id), n]).filter(([x]) => x);
-  $('#list-lines').innerHTML = rows.length ? rows.map(([x, n]) => `<div class="line">
-    <div class="nm">${esc(x.name)}<small>${esc(x.en)}</small></div>
-    <div class="qty"><button type="button" data-qty="${x.id}" data-d="-1" aria-label="أنقص ${esc(x.name)}">−</button><span>${n}</span><button type="button" data-qty="${x.id}" data-d="1" aria-label="زد ${esc(x.name)}">+</button></div>
-    <span class="price">${money(x.price * n)}<small>JD</small></span></div>`).join('')
-    : '<p class="list-empty">قائمتك فاضية لسه.<br>تصفّح المنيو واضغط <b>+</b> على أي صنف يعجبك.</p>';
-  $('#list-total').innerHTML = `${money(total())}<small>JD</small>`;
-  $('#list-clear').hidden = !rows.length;
-}
-function paint() { paintAdds(); paintTray(); paintList(); if (sheet.open) paintSheet(); }
-paint();
-trayBtn.addEventListener('click', () => { if (trayBtn.dataset.mode === 'list') { paintList(); $('#list').showModal(); } else $('#menu').scrollIntoView({ behavior: motionOK ? 'smooth' : 'auto' }); });
-$('#list-clear').addEventListener('click', () => { list = {}; save(); paint(); });
+function openItem(id) { const k = items.findIndex(x => x.id === id); if (k < 0) return; show(k); sheet.showModal(); }
+let tx = 0, ty = 0;
+sheet.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+sheet.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty; if (Math.abs(dx) > 60 && Math.abs(dy) < 70) show(at + (dx < 0 ? 1 : -1)); }, { passive: true });
+sheet.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') show(at + 1); if (e.key === 'ArrowRight') show(at - 1); });
 
 /* one listener for every control */
 document.addEventListener('click', e => {
   const t = e.target;
   const o = t.closest('[data-open]'); if (o) return openItem(o.dataset.open);
-  const a = t.closest('[data-add]'); if (a) return add(a.dataset.add, +1);
-  const qb = t.closest('[data-qty]'); if (qb) return add(qb.dataset.qty, +qb.dataset.d);
-  const sa = t.closest('[data-sheet-action]'); if (sa) return sa.dataset.sheetAction === 'add' ? add(sheet.dataset.id, +1) : sheet.close();
+  const st = t.closest('[data-step]'); if (st) return show(at + +st.dataset.step);
+  const ar = t.closest('[data-arrow]'); if (ar) return slide($('[data-plates]', ar.closest('.chapter')), +ar.dataset.arrow);
   const j = t.closest('[data-jump]'); if (j) return jump(j.dataset.jump);
   if (t.closest('[data-find]')) return openSearch();
   if (t.closest('[data-find-close]')) return closeSearch();
@@ -189,6 +167,10 @@ document.addEventListener('click', e => {
   if (t.closest('[data-privacy]')) return $('#privacy').showModal();
 });
 $$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+
+/* the menu pill hides once you're in the menu */
+const tray = $('.tray');
+new IntersectionObserver(es => tray.classList.toggle('hide', es[0].isIntersecting), { rootMargin: '-120px 0px 0px 0px' }).observe($('#menu'));
 
 /* films */
 const films = $$('video'), toggle = $('.film-toggle');
@@ -198,6 +180,6 @@ toggle.addEventListener('click', () => { paused = !paused; playback(); });
 if (paused) playback();
 
 $('#year').textContent = new Date().getFullYear();
+chrome(); spy();
 if (location.hash === '#menu') requestAnimationFrame(() => $('#menu').scrollIntoView({ behavior: 'instant' }));
-spy();
 })();
