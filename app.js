@@ -183,7 +183,7 @@ function close() {
   const el = origin;
   let dest = null;
   if (el) { const r = el.getBoundingClientRect(); if (inView(r)) dest = r; }
-  if (dest && at !== originAt) fillFront(items[originAt]);   /* the card turns back over showing its own plate */
+  if (at !== originAt) fillFront(items[originAt]);   /* the card turns back over showing the plate it came from */
   hidePlate(dest ? el : null);
   let done = false;
   const finish = () => {
