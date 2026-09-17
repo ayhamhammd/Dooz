@@ -93,7 +93,8 @@ h2.display{font-size:clamp(36px,5.2vw,64px)}
 .menu{padding:clamp(40px,6vw,88px) 0 90px}
 .menu-head{margin-bottom:18px}
 .menu-head .sub{margin-top:10px}
-.menu-body{display:grid}
+.menu-body{display:grid;grid-template-columns:minmax(0,1fr)}
+.menu-body>*{min-width:0}
 
 /* the rail: pinned category strip on a phone, a side list on a desk */
 .rail{position:sticky;top:var(--rail-top);z-index:30;background:rgba(14,12,10,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin-inline:calc(-1*var(--gutter));padding-inline:var(--gutter);transition:top .3s}
@@ -115,7 +116,7 @@ h2.display{font-size:clamp(36px,5.2vw,64px)}
 .rail-search svg{position:absolute;inset-inline-start:13px;top:50%;translate:0 -50%;width:17px;height:17px;stroke:var(--dust);fill:none;stroke-width:1.8;stroke-linecap:round;pointer-events:none}
 .rail-search .cancel{font-size:13.5px;color:var(--brass);padding:8px 2px;white-space:nowrap}
 @media(min-width:1024px){
-  .menu-body{grid-template-columns:240px 1fr;gap:48px;align-items:start}
+  .menu-body{grid-template-columns:240px minmax(0,1fr);gap:48px;align-items:start}
   .rail{top:calc(var(--top) + 16px);background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border:0;margin:0;padding:0;transition:none}
   .rail-search{display:flex;margin-bottom:10px}
   .rail-search .cancel{display:none}
@@ -128,7 +129,7 @@ h2.display{font-size:clamp(36px,5.2vw,64px)}
 }
 
 /* chapters — one per category, a row of plates you swipe through */
-.chapter{padding:22px 0 4px;scroll-margin-top:calc(var(--rail) + 8px)}
+.chapter{padding:22px 0 4px;min-width:0;max-width:100%;scroll-margin-top:calc(var(--rail) + 8px)}
 @media(min-width:1024px){.chapter{scroll-margin-top:calc(var(--top) + 24px)}}
 .chapter-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;min-width:0}
 .chapter-head>svg{width:28px;height:28px;stroke:var(--brass);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none;filter:drop-shadow(0 0 8px rgba(201,162,94,.35))}
