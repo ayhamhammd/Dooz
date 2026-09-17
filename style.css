@@ -240,9 +240,8 @@ dialog::backdrop{background:rgba(8,6,4,.78);backdrop-filter:blur(8px);-webkit-ba
 .dlg-close:hover{background:var(--brass);color:var(--night)}
 
 /* the flip — the plate you touched lifts off the row, turns over, and settles in the middle of the screen */
-html.locked{overflow:hidden}
 #pop-backdrop{position:fixed;inset:0;z-index:60;background:rgba(8,6,4,.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);touch-action:none}
-#pop{position:fixed;z-index:61;transform-origin:0 0;perspective:1500px;outline:none;will-change:transform}
+#pop{position:fixed;z-index:61;transform-origin:0 0;perspective:1500px;outline:none;will-change:transform;touch-action:pan-y}
 .pop-card{position:relative;width:100%;height:100%;transform-style:preserve-3d;-webkit-transform-style:preserve-3d}
 .pop-face{position:absolute;inset:0;border-radius:22px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#1a1512;box-shadow:0 0 0 1px rgba(201,162,94,.35),0 30px 80px rgba(0,0,0,.6)}
 .pop-front{pointer-events:none}
@@ -258,7 +257,7 @@ html.locked{overflow:hidden}
 .pop-back .frame{position:absolute;inset:11px;border:1px solid rgba(201,162,94,.35);border-radius:15px;pointer-events:none}
 .pop-close{position:absolute;top:12px;inset-inline-start:12px;width:40px;height:40px;border-radius:50%;background:rgba(14,12,10,.6);color:var(--marble);font-size:22px;line-height:1;display:grid;place-items:center;z-index:3;border:1px solid rgba(201,162,94,.25)}
 .pop-close:hover{background:var(--brass);color:var(--night)}
-.back-content{position:relative;flex:1;overflow:auto;overscroll-behavior:contain;padding:52px 26px 12px;display:grid;gap:8px;align-content:start;-webkit-overflow-scrolling:touch;cursor:pointer}
+.back-content{position:relative;flex:1;overflow:auto;overscroll-behavior:contain;touch-action:pan-y;padding:52px 26px 12px;display:grid;gap:8px;align-content:start;-webkit-overflow-scrolling:touch;cursor:pointer}
 .back-content .eyebrow{margin-bottom:4px;color:var(--brass-2)}
 .back-content h3{font:400 clamp(30px,8vw,38px)/1.3 var(--ruqaa);color:var(--marble);text-wrap:balance;text-shadow:0 2px 20px rgba(0,0,0,.5)}
 .back-content .en{font:italic 400 17px/1.3 var(--serif);color:var(--marble-2);text-align:end}

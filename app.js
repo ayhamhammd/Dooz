@@ -138,19 +138,21 @@ q.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
 function openSearch() { railBox.classList.add('searching'); q.focus(); }
 function closeSearch() { q.value = ''; q.dispatchEvent(new Event('input')); railBox.classList.remove('searching'); }
 
-/* the flip: the plate you touched lifts off the row, turns over, and settles mid-screen. closing flies it back. */
+/* the flip: the plate you touched lifts off the row, turns over, and settles mid-screen.
+   dismissing flies it straight back onto that same plate — the page never moves underneath. */
 const pop = $('#pop'), popCard = $('.pop-card', pop), backdrop = $('#pop-backdrop'), tray = $('.tray');
 const FLY = { duration: 640, easing: 'cubic-bezier(.2,.8,.2,1)' }, FLIP = { duration: 640, easing: 'cubic-bezier(.35,.7,.25,1)', fill: 'forwards' };
-let at = -1, hiddenPlate = null, busy = false;
-const plateOf = id => $(`.plate[data-open="${id}"]`);
+let at = -1, origin = null, originAt = -1, hiddenPlate = null, busy = false, closing = false;
 function targetRect() {
   const w = Math.min(innerWidth * 0.9, 420), h = Math.min(w * 1.3, innerHeight * 0.82);
   return { left: (innerWidth - w) / 2, top: (innerHeight - h) / 2, width: w, height: h };
 }
-function fill(x) {
-  const src = img(x);
-  $('.front-img', pop).src = src; $('.back-bg', pop).src = src;
+function fillFront(x) {
+  $('.front-img', pop).src = img(x);
   $('.pop-front .name', pop).textContent = x.name; $('.pop-front .en', pop).textContent = x.en; $('.pop-front .price', pop).innerHTML = `${money(x.price)}<small>JD</small>`;
+}
+function fill(x) {
+  fillFront(x); $('.back-bg', pop).src = img(x);
   $('.back-content .eyebrow', pop).textContent = x.cat.en; $('#pop-name').textContent = x.name; $('.back-content .en', pop).textContent = x.en;
   $('.back-content .detail', pop).textContent = x.detail; $('.back-content .price', pop).innerHTML = `${money(x.price)}<small>JD</small>`;
   $('.pop-bar .count', pop).innerHTML = `${x.i + 1} / ${x.n}<small>${esc(x.cat.name)}</small>`;
@@ -159,13 +161,12 @@ function fill(x) {
 function hidePlate(el) { if (hiddenPlate) hiddenPlate.style.visibility = ''; hiddenPlate = el; if (el) el.style.visibility = 'hidden'; }
 function inView(r) { return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; }
 function openFrom(el, k) {
-  if (busy || pop.classList.contains('open')) return;
-  at = k; fill(items[k]);
+  if (busy || closing || pop.classList.contains('open')) return;
+  at = originAt = k; origin = el; fill(items[k]);
   const first = el.getBoundingClientRect(), last = targetRect();
   Object.assign(pop.style, { left: `${last.left}px`, top: `${last.top}px`, width: `${last.width}px`, height: `${last.height}px` });
-  pop.hidden = false; backdrop.hidden = false; pop.classList.add('open');
-  document.documentElement.classList.add('locked'); hidePlate(el);
-  popCard.getAnimations().forEach(a => a.cancel());
+  pop.hidden = false; backdrop.hidden = false; pop.classList.add('open'); hidePlate(el);
+  pop.getAnimations().forEach(a => a.cancel()); popCard.getAnimations().forEach(a => a.cancel()); backdrop.getAnimations().forEach(a => a.cancel());
   if (motionOK) {
     busy = true;
     const dx = first.left - last.left, dy = first.top - last.top;
@@ -177,39 +178,42 @@ function openFrom(el, k) {
   pop.focus({ preventScroll: true });
 }
 function close() {
-  if (!pop.classList.contains('open') || busy) return;
-  const x = items[at], el = plateOf(x.id);
+  if (!pop.classList.contains('open') || closing) return;
+  closing = true;
+  const el = origin;
   let dest = null;
-  if (el) {
-    const r0 = el.getBoundingClientRect();
-    if (r0.bottom < 0 || r0.top > innerHeight) window.scrollBy({ top: r0.top - (innerHeight - r0.height) / 2, behavior: 'auto' });
-    centerIn(el.parentElement, el, false);
-    el.style.transition = 'none'; el.classList.add('lit'); void el.offsetWidth;
-    const r = el.getBoundingClientRect(); el.style.transition = '';
-    if (inView(r)) dest = r;
-  }
+  if (el) { const r = el.getBoundingClientRect(); if (inView(r)) dest = r; }
+  if (dest && at !== originAt) fillFront(items[originAt]);   /* the card turns back over showing its own plate */
   hidePlate(dest ? el : null);
   let done = false;
   const finish = () => {
-    if (done) return; done = true; busy = false;
+    if (done) return; done = true; busy = false; closing = false;
     pop.classList.remove('open'); pop.hidden = true; backdrop.hidden = true;
-    document.documentElement.classList.remove('locked');
-    popCard.getAnimations().forEach(a => a.cancel()); popCard.style.transform = '';
-    hidePlate(null); spy(); pill();
+    pop.getAnimations().forEach(a => a.cancel()); popCard.getAnimations().forEach(a => a.cancel()); backdrop.getAnimations().forEach(a => a.cancel());
+    popCard.style.transform = '';
+    hidePlate(null);
     if (el) el.focus({ preventScroll: true });
   };
   if (!motionOK) return finish();
+  /* if the card is still in flight, pick it up from exactly where it is */
+  const cur = pop.getBoundingClientRect();
+  const last = { left: parseFloat(pop.style.left), top: parseFloat(pop.style.top), width: parseFloat(pop.style.width), height: parseFloat(pop.style.height) };
+  const fromT = busy ? `translate(${cur.left - last.left}px,${cur.top - last.top}px) scale(${cur.width / last.width},${cur.height / last.height})` : 'none';
+  let angle = 180;
+  if (busy) { const m = new DOMMatrix(getComputedStyle(popCard).transform); angle = Math.round(Math.acos(Math.max(-1, Math.min(1, m.m11))) * 180 / Math.PI); }
+  const shade = parseFloat(getComputedStyle(backdrop).opacity) || 1;
+  pop.getAnimations().forEach(a => a.cancel()); popCard.getAnimations().forEach(a => a.cancel()); backdrop.getAnimations().forEach(a => a.cancel());
   busy = true;
-  const last = pop.getBoundingClientRect();
   const to = dest ? `translate(${dest.left - last.left}px,${dest.top - last.top}px) scale(${dest.width / last.width},${dest.height / last.height})` : 'scale(.92)';
-  const a = pop.animate([{ transform: 'none', opacity: 1 }, { transform: to, opacity: dest ? 1 : 0 }], { duration: 520, easing: 'cubic-bezier(.3,.7,.2,1)' });
-  popCard.animate([{ transform: 'rotateY(180deg)' }, { transform: 'rotateY(0deg)' }], { duration: 520, easing: 'cubic-bezier(.3,.7,.2,1)', fill: 'forwards' });
-  backdrop.animate([{ opacity: 1, backdropFilter: 'blur(10px)', webkitBackdropFilter: 'blur(10px)' }, { opacity: 0, backdropFilter: 'blur(0px)', webkitBackdropFilter: 'blur(0px)' }], { duration: 520, easing: 'ease-in', fill: 'forwards' });
-  a.onfinish = finish; setTimeout(finish, 620);
+  const ease = 'cubic-bezier(.3,.7,.2,1)', dur = Math.max(260, Math.round(520 * angle / 180));
+  const a = pop.animate([{ transform: fromT, opacity: 1 }, { transform: to, opacity: dest ? 1 : 0 }], { duration: dur, easing: ease });
+  popCard.animate([{ transform: `rotateY(${angle}deg)` }, { transform: 'rotateY(0deg)' }], { duration: dur, easing: ease, fill: 'forwards' });
+  backdrop.animate([{ opacity: shade, backdropFilter: `blur(${10 * shade}px)`, webkitBackdropFilter: `blur(${10 * shade}px)` }, { opacity: 0, backdropFilter: 'blur(0px)', webkitBackdropFilter: 'blur(0px)' }], { duration: dur, easing: 'ease-in', fill: 'forwards' });
+  a.onfinish = finish; setTimeout(finish, dur + 100);
 }
 function step(d) {
-  const k = at + d; if (k < 0 || k >= items.length || busy) return;
-  at = k; hidePlate(null);
+  const k = at + d; if (k < 0 || k >= items.length || busy || closing) return;
+  at = k;
   const content = $('.back-content', pop);
   if (!motionOK) return fill(items[k]);
   const out = content.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-d * 16}px)` }], { duration: 140, fill: 'forwards' });
@@ -217,6 +221,11 @@ function step(d) {
   const swap = () => { if (swapped) return; swapped = true; out.cancel(); fill(items[k]); content.animate([{ opacity: 0, transform: `translateX(${d * 16}px)` }, { opacity: 1, transform: 'none' }], { duration: 240, easing: 'ease-out' }); };
   out.onfinish = swap; setTimeout(swap, 200);
 }
+/* nothing behind the card may scroll: the backdrop eats touches and wheel, the card only lets its text panel scroll */
+backdrop.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+backdrop.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+pop.addEventListener('touchmove', e => { if (!e.target.closest('.back-content')) e.preventDefault(); }, { passive: false });
+pop.addEventListener('wheel', e => { if (!e.target.closest('.back-content')) e.preventDefault(); }, { passive: false });
 let tx = 0, ty = 0;
 pop.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
 pop.addEventListener('touchend', e => {
@@ -226,7 +235,8 @@ pop.addEventListener('touchend', e => {
 }, { passive: true });
 document.addEventListener('keydown', e => {
   if (!pop.classList.contains('open')) return;
-  if (e.key === 'Escape') close(); if (e.key === 'ArrowLeft') step(1); if (e.key === 'ArrowRight') step(-1);
+  if (e.key === 'Escape') close(); else if (e.key === 'ArrowLeft') step(1); else if (e.key === 'ArrowRight') step(-1);
+  else if ([' ', 'PageDown', 'PageUp', 'Home', 'End'].includes(e.key)) e.preventDefault();
 });
 backdrop.addEventListener('click', close);
 
