@@ -269,6 +269,16 @@ function pill() {
   if (trayArrow.textContent !== dir) trayArrow.textContent = dir;
 }
 
+/* the moments films: a clip downloads nothing until its tile reaches the screen, then loops while it's there and stops the moment it leaves */
+const clips = $$('.gallery video');
+if (motionOK && clips.length && 'IntersectionObserver' in window) {
+  const eye = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) e.target.play().catch(() => {});   /* a refused autoplay just leaves the poster up */
+    else e.target.pause();
+  }), { rootMargin: '200px 0px', threshold: .25 });
+  clips.forEach(v => eye.observe(v));
+}
+
 /* films: honour Reduce Motion */
 if (!motionOK) $$('video').forEach(v => v.pause());
 
